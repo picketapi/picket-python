@@ -1,78 +1,20 @@
 import os
 
-from dataclasses import dataclass
-from typing import Dict
-
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import JSONDecodeError
 
+from .exceptions import PicketAPIException
+from .helpers import is_successful_status_code, snake_to_camel_keys
+from .types import (
+    NonceResponse,
+    AuthorizedUser,
+    AuthResponse,
+    TokenOwnershipResponse,
+)
+
 API_VERSION = "v1"
 API_BASE_URL = os.path.join("https://picketapi.com/api/", API_VERSION)
-
-
-def is_successful_status_code(status_code):
-    return status_code >= 200 and status_code < 300
-
-
-class PicketAPIException(Exception):
-    def __init__(self, msg: str, code: str):
-        super().__init__(msg)
-        self.msg = msg
-        self.code = code
-
-    def __str__(self):
-        return self.msg
-
-
-@dataclass
-class NonceResponse:
-    nonce: str
-    statement: str
-    format: str
-
-    @classmethod
-    def from_dict(cls, d):
-        return cls(d["nonce"], d["statement"], d["format"])
-
-
-TokenBalances = Dict[str, Dict[str, str]]
-
-
-@dataclass
-class AuthorizedUser:
-    chain: str
-    wallet_address: str
-    display_name: str
-    token_balances: TokenBalances
-
-    @classmethod
-    def from_dict(cls, d):
-        return cls(
-            d["chain"], d["wallet_address"], d["display_name"], d["token_balances"]
-        )
-
-
-@dataclass
-class AuthResponse:
-    access_token: str
-    user: AuthorizedUser
-
-    @classmethod
-    def from_dict(cls, d):
-        user = AuthorizedUser.from_dict(d["user"])
-        return cls(d["accessToken"], user)
-
-
-@dataclass
-class TokenOwnershipResponse:
-    allowed: bool
-    walletAddress: str
-    token_balances: TokenBalances
-
-    @classmethod
-    def from_dict(cls, d):
-        return cls(d["allowed"], d["walletAddress"], d["token_balances"])
 
 
 class Picket:
@@ -93,14 +35,20 @@ class Picket:
         auth = HTTPBasicAuth(self.api_key, "")
         headers = self.headers()
 
-        req = requests.post(url, auth=auth, headers=headers, data=kwargs)
+        # transform keys to camelCase
+        req = requests.post(
+            url, auth=auth, headers=headers, json=snake_to_camel_keys(kwargs)
+        )
         try:
             data = req.json()
         except JSONDecodeError:
             raise Exception(req.text)
 
         if not is_successful_status_code(req.status_code):
-            raise PicketAPIException(data["msg"], data["code"])
+            if "msg" not in data:
+                raise Exception(data)
+            # msg is required, code is optional
+            raise PicketAPIException(data["msg"], data.get("code", None))
 
         return data
 

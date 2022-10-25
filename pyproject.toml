@@ -4,14 +4,19 @@ version = "0.1.0"
 description = "The official Python library for the Picket API (https://picketapi.com/)"
 authors = ["Devin Stein <devstein@seas.upenn.edu>"]
 readme = "README.md"
+packages = [
+    { include = "picketapi", from = "src" },
+]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.7"
 requests = "^2.28.1"
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
+pytest = "^7.2.0"
+responses = "^0.22.0"
 
 [build-system]
 requires = ["poetry-core"]
