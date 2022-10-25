@@ -8,4 +8,7 @@ def snake_to_camel(name: str) -> str:
 
 
 def snake_to_camel_keys(d: dict) -> dict:
-    return {snake_to_camel(k): v for k, v in d.items()}
+    return {
+        snake_to_camel(k): v if type(v) is not dict else snake_to_camel_keys(v)
+        for k, v in d.items()
+    }
