@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "The official Python library for the Picket API (https://picketapi.com/)"
 authors = ["Devin Stein <devstein@seas.upenn.edu>"]
 readme = "README.md"
+homepage = "https://github.com/picketapi/picket-python"
 packages = [
     { include = "picketapi", from = "src" },
 ]
