@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "picketapi"
-version = "0.1.0"
+version = "0.1.1"
 description = "The official Python library for the Picket API (https://picketapi.com/)"
 authors = ["Devin Stein <devstein@seas.upenn.edu>"]
 readme = "README.md"
